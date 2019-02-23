@@ -56,5 +56,16 @@ props: {
     }
 }
 ```
+## Course 2 - Real World VueJS
+### Vue CLI and Vue GUI
+If you have not already got it... install Vue CLI:
 
- 
+`npm install -g "vue/cli` If you get permissions errors, install and use NVM instead!
+
+You can use the CLI to get a project set up like so:
+`vue create project-name` You'll get asked all the options you want on installation.
+
+WHat is cool though is the Vue GUI which can be accessed from:
+`vue ui`
+This allows you to create and manage applications from a sweet user interface.
+
