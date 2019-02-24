@@ -5,11 +5,16 @@ import Home from "./views/Home.vue";
 Vue.use(Router);
 
 export default new Router({
+  mode: "history",r
   routes: [
     {
       path: "/",
       name: "home",
       component: Home
+    },
+    {
+      path: "about-redirect",
+      redirect: { name: "about" }
     },
     {
       path: "/about",
