@@ -363,4 +363,16 @@ The same can be done with getters:
     }
 </script>
 ```
-Mutations and actions pt1 - 5:15
+### Pagination with Vuex
+To get page number from the URL, use the following:
+```vue
+this.$route.query.page
+```
+'page' here can be any variable you want to get from the query strings in the url
+
+### Reloading Components when Any Part of URL Changes
+Sometimes you'll find clicking a link will not reload components properly. To make this happen, add the following to your 
+router-view:
+```vue
+<router-view :key="$route.fullPath" />
+```
