@@ -376,3 +376,45 @@ router-view:
 ```vue
 <router-view :key="$route.fullPath" />
 ```
+### Using Vuex Modules
+To create Nuxt style store modules, create a 'stores/modules' directory and then named store JS files within this directory.
+The base store.js file should go in the 'stores' directory also.
+
+Then when defining your Vuex store, indicate the modules that need to be included like so:
+```vue
+export default new Vuex.Store({
+    modules: {
+        storeName
+    }
+...
+```
+Then when using this inside of a component:
+```vue
+{{ moduleName.stateName.variableName }}
+```
+### Accessing the state of one module inside of another
+You can access the 'rootState' inside of a state component. This is the base state that can then access any state module 
+using dot notation.
+
+### Namespaced Vuex Modules
+By default, all actions, getters and mutations are registered in the Vuex global state. This is great for ease of use but 
+also bad because we can end up with naming collisions. We can fix this with:
+```vue
+export const namespaced = true
+```
+This is to be added in your Vuex module files and causes an update to be required to your action dispatches:
+```vue
+this.$store.dispatch('storeNamespace/actionName', {
+...
+```
+Just like in Nuxt. A great way to use this with mapActions is as follows:
+```vue
+methods: mapActions('storeNamespace', ['actionName1', 'actionName2'])
+```
+### Calling the action of one Namespaced Module inside of another
+This can be done like so:
+```vue
+dispatch('moduleNamespace/actionName', null, { root: true })
+```
+- null is the payload for the action call.
+- the third parameter tells Vuex to look for the action from the root of the store.
