@@ -1,7 +1,7 @@
 # Vue Mastery
 Taking advantage of that sweet free weekend on Vue Mastery: https://www.vuemastery.com/
 
-## Course 1 - Intro to Vue.js
+## Lesson 1 - Intro to Vue.js
 I am not new to Vue so I skipped over a lot of the basics. Here are some cool things I didn't know, though:
 
 ### Short-hand v-for Key Binding
@@ -56,7 +56,7 @@ props: {
     }
 }
 ```
-## Course 2 - Real World VueJS
+## Lesson 2 - Real World VueJS
 ### Vue CLI and Vue GUI
 If you have not already got it... install Vue CLI:
 
@@ -154,3 +154,213 @@ export default new Router({
     ]
 })
 ```
+### Global Components
+Eliminate the tedium of exporting and importing components used everywhere... things like home links, icons etc.
+in your main js file do the following:
+```vue
+... other imports here
+import ComponentName from '@/components/ComponentName.vue'
+
+Vue.component('ComponentName', ComponentName)
+
+```
+And that's it! `ComponentName` can now be used in any component.
+
+This is fine for one and two but we should use automatic registration if we have many we want to import many into the 
+main.js file:
+```vue
+const requireComponent = require.context(
+      './components',
+      false,
+      /Base[A-Z]\w+\.(vue|js)$/
+    )
+    
+    requireComponent.keys().forEach(fileName => {
+          const componentConfig = requireComponent(fileName)
+        
+          const componentName = upperFirst(
+            camelCase(
+              fileName.replace(/^\.\/(.*)\.\w+$/, '$1')
+            )
+          )
+        
+          Vue.component(
+            componentName,
+            componentConfig.default || componentConfig
+          )
+        }) 
+```
+In this example: `require.context` is a Webpack function that takes the following arguments:
+- Directory to search within
+- Include Subdirectories
+- Regex pattern
+
+So in the example above we are searching in the components directory but not sub-directories for any .vue or .js file
+with the prefix 'Base'.
+
+The `camelCase` method is Loadash method which is being used to convert any kabob-case names to camel-case.
+
+### Using SVG with Vue
+Parts of svg files can be referenced and displayed conditionally within vue by using `<svg>` elements:
+```vue
+<template>
+    <div class="icon-wrapper">
+      <svg class="icon" width="" height="">
+        <use v-bind="{'xlink:href':'/feather-sprite.svg#'+name}"/> // notice +name here
+      </svg>
+    </div>
+</template>
+    
+<script>
+    export default {
+      props: {
+        name: String // the name of the symbol we want to use
+      }
+    }
+</script>
+```
+
+The svg must of course be prepared for use like this:
+```
+<symbol id="activity" viewBox="0 0 24 24">
+  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+</symbol>
+```
+Notice the ID is added to the symbol in order to get this to work.
+
+### Templates in Slots
+It is possible to include a template tag inside of a slot if you need to have more than one element (can also be components) 
+put into a slot:
+```vue
+<template>
+    <MediaBox>
+        <h2 slot="heading">Rob S</h2>
+        <template>
+            <p>Some words.</p>
+            <p>Some other blahh.</p>
+            <OtherComponent/>
+        </template>    
+    </MediaBox>
+</template>
+```
+Notice that this nested `template` tag does not HAVE to have a single root element like the parent `template` tag.
+
+### Services
+Services are great for things like code that calls APIs where we want to keep things in one place for multiple components 
+to use. Create a `services` directory and create a js file inside of it.
+```js
+import axios from 'axios'
+
+const apiClient = axios.create({
+    baseURL: 'http://localhost:3000',
+    withCredentials: false,
+    headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+    }
+});
+
+export default {
+    getEvents() {
+        return apiClient.get('/events')
+    }
+}
+```
+What the above shows is that because the `apiClient` has a base url set, the `getEvents` call will have the base url
+prepended to it meaning the call will go to `http://localhost:3000/events`.
+
+This service can then be imported into the component where it needs to be used:
+```js
+import EventService from '@/services/EventService.js'
+
+EventService.getEvents()
+    .then(response => {
+        console.log(response.data)
+    })
+    .catch(error => {
+        console.log(error)
+    })
+```
+## Lesson 3 - Vuex
+### Accessing State Variables
+Variables from the store can be accessed at any time using from within a template using:
+```vue
+{{ $store.state.blahh }}
+```
+
+And it can be used at any time in component script logic using:
+```vue
+this.$store.state.blahh
+```
+
+### Using Map State
+Sometimes we have a larger number of variables in the store that we want to use in our templates. To do this, we can 
+use `mapState`:
+```vue
+<script>
+    import { mapState } from 'vuex'
+    
+    export default {
+        computed: mapState({
+            userName: state => state.user.name,
+            userId: state => state.user.id
+        })
+    }
+</script>
+```
+You can access entire states rather than single properties as well:
+```vue
+<script>
+    import { mapState } from 'vuex'
+    
+    export default {
+        computed: mapState({
+            user: 'user',
+            categories: 'categories'
+        })
+    }
+</script>
+```
+You can then access the properties of these states using dot notation. If you don't need to rename your states, you can
+shorten this to:
+```vue
+<script>
+    import { mapState } from 'vuex'
+    
+    export default {
+        computed: mapState([ 'user', 'categories' ])
+    }
+</script>
+```
+If you want to also include some local computed values, restructure using the spread operator like so:
+```vue
+<script>
+    import { mapState } from 'vuex'
+    
+    export default {
+        computed: {
+            localComputedVariable() {
+                return 'papoi'
+            },
+            ...mapState([ 'user', 'categories' ])
+        }
+    }
+</script>
+```
+The same can be done with getters:
+```vue
+<script>
+    import { mapGetters, mapState } from 'vuex'
+    
+    export default {
+        computed: {
+            localComputedVariable() {
+                return 'papoi'
+            },
+            ...mapGetters([ 'getUserById', 'getCategories' ]),
+            ...mapState([ 'user', 'categories' ])
+        }
+    }
+</script>
+```
+Mutations and actions pt1 - 5:15
